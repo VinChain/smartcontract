@@ -43,6 +43,9 @@ contract Presale is Pausable, Contactable {
     // if weiMinimumGoal will not be reached till endTime, investors will be able to refund ETH
     uint public weiMinimumGoal;
 
+    // minimal amount of ether, that investor can invest
+    uint public minAmount;
+
     // How many distinct addresses have invested
     uint public investorCount;
 
@@ -82,7 +85,8 @@ contract Presale is Pausable, Contactable {
         LockableToken _token,
         address _wallet,
         uint _weiMaximumGoal,
-        uint _weiMinimumGoal
+        uint _weiMinimumGoal,
+        uint _minAmount
     ) {
         require(_startTime >= now);
         require(_endTime >= _startTime);
@@ -99,6 +103,7 @@ contract Presale is Pausable, Contactable {
         wallet = _wallet;
         weiMaximumGoal = _weiMaximumGoal;
         weiMinimumGoal = _weiMinimumGoal;
+        minAmount = _minAmount;
 }
 
     // fallback function can be used to buy tokens
@@ -139,8 +144,9 @@ contract Presale is Pausable, Contactable {
         bool withinPeriod = (now >= startTime || earlyParticipantWhitelist[msg.sender]) && now <= endTime;
         bool nonZeroPurchase = msg.value != 0;
         bool withinCap = weiRaised.add(msg.value) <= weiMaximumGoal;
+        bool moreThenMinimal = msg.value >= minAmount;
 
-        return withinPeriod && nonZeroPurchase && withinCap;
+        return withinPeriod && nonZeroPurchase && withinCap && moreThenMinimal;
     }
 
     // return true if crowdsale event has ended

@@ -30,7 +30,8 @@ contract("Presale", (accounts) => {
             token.address,
             WALLET,
             WEI_MAXIMUM_GOAL,
-            WEI_MINIMUM_GOAL
+            WEI_MINIMUM_GOAL,
+            0
         )
         
         await token.approve(presale.address, WEI_MAXIMUM_GOAL * RATE, {from: OWNER})
@@ -73,8 +74,13 @@ contract("Presale", (accounts) => {
         res.should.be.bignumber.equals(PricingStrategy.address)
     })
 
+    it("should not allow to invest less then min amount", async () => {
+        return presale.sendTransaction({ from: INVESTOR, value: 1 })
+            .should.be.rejected
+    })
+
     it("should allow whitelisted investors to invest before start", async () => {
-        const value = 1
+        const value = 2
         await presale.sendTransaction({ from: INVESTOR, value: value })
 
         const token = await VinToken.deployed()
@@ -88,7 +94,7 @@ contract("Presale", (accounts) => {
         const startTime = (await presale.startTime()).toNumber()
         utils.increaseTime(startTime - now + 30)
 
-        const value = 1
+        const value = 2
         const balance1 = new BigNumber(web3.eth.getBalance(WALLET))
 
         await presale.sendTransaction({ from: INVESTOR2, value: value })
