@@ -17,10 +17,9 @@ contract("VinToken", (accounts) => {
   const PRESALE_ADDRESS = accounts[6]
   const FOUNDER_1_ADDRESS = accounts[7]
   const FOUNDER_2_ADDRESS = accounts[8]
-  const ICO_START_TIME = 1521727200 // Thursday, March 22, 2018 2:00:00 PM UTC
-  const ICO_END_TIME = 1523800800 // Sunday, April 15, 2018 2:00:00 PM UTC
+  const ICO_START_TIME = utils.now() + 999999
+  const ICO_END_TIME = ICO_START_TIME + 999999
   const LOCK_PERIOD_FOR_BUYERS = 100 * 24 * 60 * 60 // 100 days > 12 weeks
-  const TIME_FOR_ICO_END = ICO_END_TIME - Math.round(Date.now() / 1000)
 
   let token
 
@@ -138,14 +137,14 @@ contract("VinToken", (accounts) => {
     balance.should.be.bignumber.equals(expectedBalance)
   })
 
-  it("should not allow transfer tokens from non-owner accounts before lock time ended", async () => {
+  it("should not allow transfer tokens from investor accounts before lock time ended", async () => {
     const amount = 100
     const promise = token.transfer(UNKNOWN2, amount, { from: UNKNOWN })
     return promise.should.be.rejected
   })
 
   it("should allow transfer tokens from all accounts after lock time ended", async() => {
-    utils.increaseTime(TIME_FOR_ICO_END + LOCK_PERIOD_FOR_BUYERS)
+    utils.increaseTime(ICO_END_TIME + LOCK_PERIOD_FOR_BUYERS - utils.now())
     const amount = 100
     await token.transfer(UNKNOWN2, amount, { from: UNKNOWN })
     const balance = new BigNumber(await token.balanceOf(UNKNOWN2))

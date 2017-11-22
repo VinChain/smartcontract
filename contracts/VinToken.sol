@@ -24,7 +24,7 @@ contract VinToken is Contactable {
     mapping (address => bool) public isPresaleBuyer;
     address public saleAddress;
     address public founder1Address;
-    address public founder2Address;     
+    address public founder2Address;
     uint public icoEndTime;
     uint public icoStartTime;
 

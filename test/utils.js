@@ -9,3 +9,5 @@ module.exports.increaseTime = function(deltaTime){
           })
     }
 }
+
+module.exports.now = () => web3.eth.getBlock(web3.eth.blockNumber).timestamp
