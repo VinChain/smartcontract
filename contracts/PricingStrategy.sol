@@ -13,7 +13,8 @@ contract PricingStrategy {
     function PricingStrategy(
         uint[6] _limits,
         uint[6] _rates
-    ) public {
+    ) public 
+    {
         require(_limits.length == _rates.length);
         
         limits = _limits;
@@ -30,7 +31,7 @@ contract PricingStrategy {
         uint rate = 0;
 
         for (uint8 i = 0; i < limits.length; i++) {
-            if (tokensSold > limits[i]) {
+            if (tokensSold >= limits[i]) {
                 rate = rates[i];
             }
         }
