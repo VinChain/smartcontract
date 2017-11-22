@@ -1,10 +1,10 @@
 pragma solidity 0.4.15;
 
-import "./LockableToken.sol";
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/lifecycle/Pausable.sol";
 import "zeppelin-solidity/contracts/ownership/Contactable.sol";
 import "./PricingStrategy.sol";
+import "./LockableToken.sol";
 
 
 /**

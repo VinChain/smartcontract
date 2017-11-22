@@ -15,15 +15,14 @@ contract("Presale", (accounts) => {
     const INVESTOR = accounts[1]
     const INVESTOR2 = accounts[2]
     const WALLET = accounts[3]
-    const RATE = 2
-    const CAP = 100
+    const RATE = 1
     const WEI_MINIMUM_GOAL = 1
-    const WEI_MAXIMUM_GOAL = 10
+    const WEI_MAXIMUM_GOAL = 100
 
     const deployPresale = async (deltaStart, deltaEnd) => {
         const token = await VinToken.deployed()
         const pricingStrategy = await PricingStrategy.deployed()
-        const now = web3.eth.getBlock(web3.eth.blockNumber).timestamp
+        const now = utils.now()
         const presale = await Presale.new(
             now + deltaStart,
             now + deltaEnd,
@@ -34,8 +33,9 @@ contract("Presale", (accounts) => {
             WEI_MINIMUM_GOAL
         )
         
-        await token.approve(presale.address, CAP, {from: OWNER})
+        await token.approve(presale.address, WEI_MAXIMUM_GOAL * RATE, {from: OWNER})
         await token.editWhitelist(presale.address, true, {from: OWNER})
+        await token.setSaleAddress(presale.address, {from: OWNER})
 
         return presale
     }
@@ -94,7 +94,7 @@ contract("Presale", (accounts) => {
         await presale.sendTransaction({ from: INVESTOR2, value: value })
 
         const token = await VinToken.deployed()
-        const tokens = new BigNumber(await token.balanceOf(INVESTOR))
+        const tokens = new BigNumber(await token.balanceOf(INVESTOR2))
         const balance2 = new BigNumber(web3.eth.getBalance(WALLET))
 
         tokens.should.be.bignumber.equals(value * RATE)

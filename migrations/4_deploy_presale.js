@@ -40,6 +40,7 @@ module.exports = function (deployer, network, accounts) {
     .then((token) => {
         return token.approve(Presale.address, maxTokens)
         .then(() => token.editWhitelist(Presale.address, true))
+        .then(() => token.setSaleAddress(Presale.address))
     })
     .then(() => console.log("Presale contracts deployed successfully"))
 }
