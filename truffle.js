@@ -15,7 +15,8 @@ module.exports = {
       host: "localhost",
       port: 8545,
       network_id: 1,
-      gasPrice: 4000000000
+      gasPrice: 10000000000,
+      from: "0x00b2266565a2dF4dF0Dd473281b7bB88A86b27dd"
     }
   }
 }

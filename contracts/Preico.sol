@@ -8,14 +8,14 @@ import "./LockableToken.sol";
 
 
 /**
- * @title Presale
- * @dev Presale is a contract for managing a token crowdsale.
- * Presales have a start and end timestamps, where investors can make
+ * @title Preico
+ * @dev Preico is a contract for managing a token crowdsale.
+ * Preicos have a start and end timestamps, where investors can make
  * token purchases and the crowdsale will assign them tokens based
  * on a token per ETH rate. Funds collected are forwarded to a wallet
  * as they arrive.
  */
-contract Presale is Pausable, Contactable {
+contract Preico is Pausable, Contactable {
     using SafeMath for uint;
   
     // The token being sold
@@ -42,9 +42,6 @@ contract Presale is Pausable, Contactable {
 
     // if weiMinimumGoal will not be reached till endTime, investors will be able to refund ETH
     uint public weiMinimumGoal;
-
-    // minimal amount of ether, that investor can invest
-    uint public minAmount;
 
     // How many distinct addresses have invested
     uint public investorCount;
@@ -78,7 +75,7 @@ contract Presale is Pausable, Contactable {
     // a refund was processed for an investor
     event Refund(address investor, uint weiAmount);
 
-    function Presale(
+    function Preico(
         uint _startTime,
         uint _endTime,
         PricingStrategy _pricingStrategy,
@@ -86,7 +83,7 @@ contract Presale is Pausable, Contactable {
         address _wallet,
         uint _weiMaximumGoal,
         uint _weiMinimumGoal,
-        uint _minAmount
+        uint _tokensSold
     ) {
         require(_startTime >= now);
         require(_endTime >= _startTime);
@@ -103,7 +100,7 @@ contract Presale is Pausable, Contactable {
         wallet = _wallet;
         weiMaximumGoal = _weiMaximumGoal;
         weiMinimumGoal = _weiMinimumGoal;
-        minAmount = _minAmount;
+        tokensSold = _tokensSold;
 }
 
     // fallback function can be used to buy tokens
@@ -132,7 +129,6 @@ contract Presale is Pausable, Contactable {
     
         token.transferFrom(owner, beneficiary, tokenAmount);
         TokenPurchase(msg.sender, beneficiary, weiAmount, tokenAmount);
-        token.addToTimeLockedList(beneficiary);
 
         wallet.transfer(msg.value);
 
@@ -144,9 +140,8 @@ contract Presale is Pausable, Contactable {
         bool withinPeriod = (now >= startTime || earlyParticipantWhitelist[msg.sender]) && now <= endTime;
         bool nonZeroPurchase = msg.value != 0;
         bool withinCap = weiRaised.add(msg.value) <= weiMaximumGoal;
-        bool moreThenMinimal = msg.value >= minAmount;
 
-        return withinPeriod && nonZeroPurchase && withinCap && moreThenMinimal;
+        return withinPeriod && nonZeroPurchase && withinCap;
     }
 
     // return true if crowdsale event has ended
