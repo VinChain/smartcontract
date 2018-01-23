@@ -16,10 +16,10 @@ module.exports = (deployer, network) => {
     }
 
     // add decimals
-    // for (let i = 0; i < LIMITS.length; i++) {
-    //     LIMITS[i] = new BigNumber(LIMITS[i]).mul(new BigNumber("1e18"))
-    //     console.log(LIMITS[i])
-    // }
+    for (let i = 0; i < LIMITS.length; i++) {
+        LIMITS[i] = new BigNumber(LIMITS[i]).mul(new BigNumber("1e18"))
+        console.log(LIMITS[i])
+    }
 
     deployer.deploy(
         PricingStrategy,

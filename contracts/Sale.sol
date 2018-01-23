@@ -143,7 +143,7 @@ contract Sale is Pausable, Contactable {
         return true;
     }
 
-    // return true if the transaction can buy tokens
+   // return true if the transaction can buy tokens
     function validPurchase() internal constant returns (bool) {
         bool withinPeriod = (now >= startTime || earlyParticipantWhitelist[msg.sender]) && now <= endTime;
         bool nonZeroPurchase = msg.value != 0;
@@ -190,6 +190,10 @@ contract Sale is Pausable, Contactable {
     function setPricingStrategy(PricingStrategy _pricingStrategy) external onlyOwner returns (bool) {
         pricingStrategy = _pricingStrategy;
         return true;
+    }
+
+    function setMinAmountForWL(uint _minAmount) external onlyOwner returns (bool) {
+        minAmountForWL = _minAmount;
     }
 
     /**

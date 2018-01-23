@@ -54,7 +54,6 @@ module.exports = function (deployer, network, accounts) {
     .then((token) => {
         return token.approve(Sale.address, maxTokens)
         .then(() => token.editWhitelist(Sale.address, true))
-        .then(() => token.setSaleAddress(Sale.address))
     })
     .then(() => console.log("Sale contracts deployed successfully"))
 }
