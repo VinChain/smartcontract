@@ -8,14 +8,14 @@ import "./LockableToken.sol";
 
 
 /**
- * @title Presale
- * @dev Presale is a contract for managing a token crowdsale.
- * Presales have a start and end timestamps, where investors can make
+ * @title Sale
+ * @dev Sale is a contract for managing a token crowdsale.
+ * Sales have a start and end timestamps, where investors can make
  * token purchases and the crowdsale will assign them tokens based
  * on a token per ETH rate. Funds collected are forwarded to a wallet
  * as they arrive.
  */
-contract Presale is Pausable, Contactable {
+contract Sale is Pausable, Contactable {
     using SafeMath for uint;
   
     // The token being sold
@@ -81,7 +81,7 @@ contract Presale is Pausable, Contactable {
     // a refund was processed for an investor
     event Refund(address investor, uint weiAmount);
 
-    function Presale(
+    function Sale(
         uint _startTime,
         uint _endTime,
         PricingStrategy _pricingStrategy,
@@ -137,7 +137,6 @@ contract Presale is Pausable, Contactable {
     
         token.transferFrom(owner, beneficiary, tokenAmount);
         TokenPurchase(msg.sender, beneficiary, weiAmount, tokenAmount);
-        token.addToTimeLockedList(beneficiary);
 
         wallet.transfer(msg.value);
 

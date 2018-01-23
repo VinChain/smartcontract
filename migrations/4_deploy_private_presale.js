@@ -1,11 +1,10 @@
 const BigNumber = require("bignumber.js")
 
 const VinToken = artifacts.require("VinToken.sol")
-const Presale = artifacts.require("Presale.sol")
+const Sale = artifacts.require("Sale.sol")
 const PricingStrategy = artifacts.require("PricingStrategy.sol")
 
 module.exports = function (deployer, network, accounts) {
-    console.log('deploy private presale');
     let startTime, 
         endTime, 
         pricingStrategy, 
@@ -40,7 +39,7 @@ module.exports = function (deployer, network, accounts) {
         minAmountForWL = 10
     }
     
-    deployer.deploy(Presale,
+    deployer.deploy(Sale,
         startTime,
         endTime,
         pricingStrategy,
@@ -53,9 +52,9 @@ module.exports = function (deployer, network, accounts) {
     )
     .then(() => VinToken.deployed())
     .then((token) => {
-        return token.approve(Presale.address, maxTokens)
-        .then(() => token.editWhitelist(Presale.address, true))
-        .then(() => token.setSaleAddress(Presale.address))
+        return token.approve(Sale.address, maxTokens)
+        .then(() => token.editWhitelist(Sale.address, true))
+        .then(() => token.setSaleAddress(Sale.address))
     })
-    .then(() => console.log("Presale contracts deployed successfully"))
+    .then(() => console.log("Sale contracts deployed successfully"))
 }
