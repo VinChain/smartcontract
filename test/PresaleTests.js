@@ -18,27 +18,33 @@ contract("Presale", (accounts) => {
     const RATE = 1
     const WEI_MINIMUM_GOAL = 1
     const WEI_MAXIMUM_GOAL = 100
+    const DAY = 60*60*24
 
     const deployPresale = async (deltaStart, deltaEnd) => {
         const token = await VinToken.deployed()
         const pricingStrategy = await PricingStrategy.deployed()
         const now = utils.now()
         const presale = await Presale.new(
-            now + deltaStart,
-            now + deltaEnd,
+            now + deltaStart*DAY,
+            now + deltaEnd*DAY,
             pricingStrategy.address,
             token.address,
             WALLET,
             WEI_MAXIMUM_GOAL,
             WEI_MINIMUM_GOAL,
-            0
+            0,
+            10
         )
         
         await token.approve(presale.address, WEI_MAXIMUM_GOAL * RATE, {from: OWNER})
         await token.editWhitelist(presale.address, true, {from: OWNER})
         await token.setSaleAddress(presale.address, {from: OWNER})
 
-        return presale
+        return {
+            presale: presale, 
+            token: token,
+            strategy: pricingStrategy
+        }
     }
 
     let presale
@@ -80,9 +86,8 @@ contract("Presale", (accounts) => {
     })
 
     it("should allow whitelisted investors to invest before start", async () => {
-        const value = 2
+        const value = 11
         await presale.sendTransaction({ from: INVESTOR, value: value })
-
         const token = await VinToken.deployed()
         const balance = new BigNumber(await token.balanceOf(INVESTOR))
 
@@ -116,12 +121,35 @@ contract("Presale", (accounts) => {
     })
 
     it("should now allow to invest after endTime", async () => {
-        presale = await deployPresale(10,11)
+        presale = (await deployPresale(10,11)).presale;
         const now = web3.eth.getBlock(web3.eth.blockNumber).timestamp
         const endTime = (await presale.endTime()).toNumber()
         utils.increaseTime(endTime - now + 30)
 
-        return presale.sendTransaction({ from: INVESTOR2, value: 1 }).should.be.rejected
+        return presale.sendTransaction({ from: INVESTOR2, value: 5 }).should.be.rejected
     })
 
+    it("should not allow to buy investor from white list amount of tokens less than minimum value", async() => {
+        let contracts = await deployPresale(5, 15); 
+        presale = contracts.presale;
+        let token = contracts.token;
+        let pricingStrategy = contracts.strategy;
+        
+        const now = web3.eth.getBlock(web3.eth.blockNumber).timestamp
+        const startTime = (await presale.startTime()).toNumber()
+        utils.increaseTime(startTime - now + 6*DAY);
+        await presale.editEarlyParicipantWhitelist(INVESTOR, true, { from: OWNER });
+        await presale.sendTransaction({from: INVESTOR, value: 9}).should.be.rejected;
+    })
+
+    it("should allow to buy investor from white list with amount of tokens more than minimum value", async() => {
+        let value = 11;
+        await presale.sendTransaction({from: INVESTOR, value: value}).should.be.fulfilled;
+    })
+
+    it("should allow to buy investor with amount of tokens more than minimum value", async() => {
+        let value = 5;
+        await presale.sendTransaction({from: INVESTOR2, value: value}).should.be.fulfilled;
+    })
+    
 })

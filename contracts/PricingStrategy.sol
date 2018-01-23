@@ -7,35 +7,49 @@ contract PricingStrategy {
 
     using SafeMath for uint;
 
-    uint[6] public limits;
-    uint[6] public rates;
+    uint[] public rates;
+    uint[] public limits;
 
     function PricingStrategy(
-        uint[6] _limits,
-        uint[6] _rates
-    ) public 
+        uint[] _rates,
+        uint[] _limits
+    ) public
     {
-        require(_limits.length == _rates.length);
-        
-        limits = _limits;
+        require(_rates.length == _limits.length);
         rates = _rates;
+        limits = _limits;
     }
 
     /** Interface declaration. */
-    function isPricingStrategy() public constant returns (bool) {
+    function isPricingStrategy() public view returns (bool) {
         return true;
     }
 
     /** Calculate the current price for buy in amount. */
-    function calculateTokenAmount(uint weiAmount, uint tokensSold) public constant returns (uint tokenAmount) {
-        uint rate = 0;
-
-        for (uint8 i = 0; i < limits.length; i++) {
-            if (tokensSold >= limits[i]) {
-                rate = rates[i];
-            }
+    function calculateTokenAmount(uint weiAmount, uint weiRaised) public view returns (uint tokenAmount) {
+        if (weiAmount == 0) {
+            return 0;
         }
 
-        return weiAmount.mul(rate);
+        var (rate, index) = currentRate(weiRaised);
+        tokenAmount = weiAmount.mul(rate);
+
+        // if we crossed slot border, recalculate remaining tokens according to next slot price
+        if (weiRaised.add(weiAmount) > limits[index]) {
+            uint currentSlotWei = limits[index].sub(weiRaised);
+            uint currentSlotTokens = currentSlotWei.mul(rate);
+            uint remainingWei = weiAmount.sub(currentSlotWei);
+            tokenAmount = currentSlotTokens.add(calculateTokenAmount(remainingWei, limits[index]));
+        }
     }
+
+    function currentRate(uint weiRaised) public view returns (uint rate, uint8 index) {
+        rate = rates[0];
+        index = 0;
+
+        while (weiRaised >= limits[index]) {
+            rate = rates[++index];
+        }
+    }
+
 }

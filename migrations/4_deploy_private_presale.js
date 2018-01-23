@@ -5,7 +5,16 @@ const Presale = artifacts.require("Presale.sol")
 const PricingStrategy = artifacts.require("PricingStrategy.sol")
 
 module.exports = function (deployer, network, accounts) {
-    let startTime, endTime, pricingStrategy, weiMaximumGoal, wallet, weiMinimumGoal, maxTokens, minAmount
+    console.log('deploy private presale');
+    let startTime, 
+        endTime, 
+        pricingStrategy, 
+        weiMaximumGoal, 
+        wallet, 
+        weiMinimumGoal, 
+        maxTokens, 
+        minAmount,
+        minAmountForWL
     
     if (network == "live") {
         startTime = 1511438400 // Thursday, November 23, 2017 12:00:00 PM UTC
@@ -16,6 +25,7 @@ module.exports = function (deployer, network, accounts) {
         weiMinimumGoal = web3.toWei(1585, "ether")
         maxTokens = new BigNumber(12500000).mul(new BigNumber("1e18"))
         minAmount = web3.toWei(1, "ether")
+        minAmountForWL = web3.toWei(2.5, "ether")
     }
     else {
         const now = web3.eth.getBlock(web3.eth.blockNumber).timestamp
@@ -27,6 +37,7 @@ module.exports = function (deployer, network, accounts) {
         weiMinimumGoal = 1
         maxTokens = new BigNumber(12500000).mul(new BigNumber("1e18"))
         minAmount = 2
+        minAmountForWL = 10
     }
     
     deployer.deploy(Presale,
@@ -37,7 +48,8 @@ module.exports = function (deployer, network, accounts) {
         wallet,
         weiMaximumGoal,
         weiMinimumGoal,
-        minAmount
+        minAmount,
+        minAmountForWL
     )
     .then(() => VinToken.deployed())
     .then((token) => {

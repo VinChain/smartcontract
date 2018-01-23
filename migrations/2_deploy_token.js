@@ -3,6 +3,7 @@ const BigNumber = require("bignumber.js")
 const VinToken = artifacts.require("./VinToken.sol")
 
 module.exports = function (deployer, network, accounts) {
+    console.log('deploy token');
     let founder1Address, founder2Address, founder3Address ,icoStartTime, icoEndTime
     let amount1, amount2, amount3
     if (network == "live") {

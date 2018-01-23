@@ -116,7 +116,7 @@ contract Preico is Pausable, Contactable {
         uint weiAmount = msg.value;
     
         // calculate token amount to be created
-        uint tokenAmount = pricingStrategy.calculateTokenAmount(weiAmount, tokensSold);
+        uint tokenAmount = pricingStrategy.calculateTokenAmount(weiAmount, weiRaised);
     
         // update state
         if (investedAmountOf[beneficiary] == 0) {

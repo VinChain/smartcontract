@@ -46,6 +46,9 @@ contract Presale is Pausable, Contactable {
     // minimal amount of ether, that investor can invest
     uint public minAmount;
 
+    // minimal amount of ether, that investor from white list can invest
+    uint public minAmountForWL;    
+
     // How many distinct addresses have invested
     uint public investorCount;
 
@@ -86,7 +89,8 @@ contract Presale is Pausable, Contactable {
         address _wallet,
         uint _weiMaximumGoal,
         uint _weiMinimumGoal,
-        uint _minAmount
+        uint _minAmount,
+        uint _minAmountForWL
     ) {
         require(_startTime >= now);
         require(_endTime >= _startTime);
@@ -104,6 +108,7 @@ contract Presale is Pausable, Contactable {
         weiMaximumGoal = _weiMaximumGoal;
         weiMinimumGoal = _weiMinimumGoal;
         minAmount = _minAmount;
+        minAmountForWL = _minAmountForWL;
 }
 
     // fallback function can be used to buy tokens
@@ -119,8 +124,8 @@ contract Presale is Pausable, Contactable {
         uint weiAmount = msg.value;
     
         // calculate token amount to be created
-        uint tokenAmount = pricingStrategy.calculateTokenAmount(weiAmount, tokensSold);
-    
+        uint tokenAmount = pricingStrategy.calculateTokenAmount(weiAmount, weiRaised);
+
         // update state
         if (investedAmountOf[beneficiary] == 0) {
             // A new investor
@@ -144,9 +149,15 @@ contract Presale is Pausable, Contactable {
         bool withinPeriod = (now >= startTime || earlyParticipantWhitelist[msg.sender]) && now <= endTime;
         bool nonZeroPurchase = msg.value != 0;
         bool withinCap = weiRaised.add(msg.value) <= weiMaximumGoal;
-        bool moreThenMinimal = msg.value >= minAmount;
+        bool moreThenMinimal = isMoreThenMinimal();
 
         return withinPeriod && nonZeroPurchase && withinCap && moreThenMinimal;
+    }
+
+    function isMoreThenMinimal() internal constant returns (bool) {
+        bool result = (earlyParticipantWhitelist[msg.sender] && msg.value >= minAmountForWL) ||
+                        (!earlyParticipantWhitelist[msg.sender] && msg.value >= minAmount);
+        return result;
     }
 
     // return true if crowdsale event has ended

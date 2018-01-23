@@ -5,6 +5,7 @@ const Preico = artifacts.require("Preico.sol")
 const PricingStrategy = artifacts.require("PricingStrategy.sol")
 
 module.exports = function (deployer, network, accounts) {
+    console.log('deploy preico presale');
     let startTime, endTime, pricingStrategy, weiMaximumGoal, wallet, weiMinimumGoal, maxTokens, tokensSold
     
     // todo: set tokens sold
