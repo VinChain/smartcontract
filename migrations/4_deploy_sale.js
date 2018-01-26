@@ -12,8 +12,7 @@ module.exports = function (deployer, network, accounts) {
         wallet, 
         weiMinimumGoal, 
         maxTokens, 
-        minAmount,
-        minAmountForWL
+        minAmount
     
     if (network == "live") {
         startTime = 1511438400 // Thursday, November 23, 2017 12:00:00 PM UTC
@@ -24,7 +23,6 @@ module.exports = function (deployer, network, accounts) {
         weiMinimumGoal = web3.toWei(1585, "ether")
         maxTokens = new BigNumber(12500000).mul(new BigNumber("1e18"))
         minAmount = web3.toWei(1, "ether")
-        minAmountForWL = web3.toWei(2.5, "ether")
     }
     else {
         const now = web3.eth.getBlock(web3.eth.blockNumber).timestamp
@@ -36,7 +34,6 @@ module.exports = function (deployer, network, accounts) {
         weiMinimumGoal = 1
         maxTokens = new BigNumber(12500000).mul(new BigNumber("1e18"))
         minAmount = 2
-        minAmountForWL = 10
     }
     
     deployer.deploy(Sale,
@@ -47,8 +44,7 @@ module.exports = function (deployer, network, accounts) {
         wallet,
         weiMaximumGoal,
         weiMinimumGoal,
-        minAmount,
-        minAmountForWL
+        minAmount
     )
     .then(() => VinToken.deployed())
     .then((token) => {

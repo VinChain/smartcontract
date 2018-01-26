@@ -99,8 +99,7 @@ contract Sale is Pausable, Contactable {
         address _wallet,
         uint _weiMaximumGoal,
         uint _weiMinimumGoal,
-        uint _minAmount,
-        uint _minAmountForWL
+        uint _minAmount
     ) {
         require(_startTime >= now);
         require(_endTime >= _startTime);
@@ -118,7 +117,6 @@ contract Sale is Pausable, Contactable {
         weiMaximumGoal = _weiMaximumGoal;
         weiMinimumGoal = _weiMinimumGoal;
         minAmount = _minAmount;
-        minAmountForWL = _minAmountForWL;
 }
 
     // fallback function can be used to buy tokens
@@ -161,15 +159,9 @@ contract Sale is Pausable, Contactable {
     function validPurchase(uint weiAmount) internal view returns (bool) {
         bool withinPeriod = (now >= startTime || earlyParticipantWhitelist[msg.sender]) && now <= endTime;
         bool withinCap = weiRaised.add(weiAmount) <= weiMaximumGoal;
-        bool moreThenMinimal = isMoreThenMinimal(weiAmount);
+        bool moreThenMinimal = weiAmount >= minAmount;
 
         return withinPeriod && withinCap && moreThenMinimal;
-    }
-
-    function isMoreThenMinimal(uint weiAmount) internal view returns (bool) {
-        bool result = (earlyParticipantWhitelist[msg.sender] && weiAmount >= minAmountForWL) ||
-                      (!earlyParticipantWhitelist[msg.sender] && weiAmount >= minAmount);
-        return result;
     }
 
     // return true if crowdsale event has ended

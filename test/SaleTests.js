@@ -34,8 +34,7 @@ contract("Sale", (accounts) => {
             WALLET,
             WEI_MAXIMUM_GOAL,
             WEI_MINIMUM_GOAL,
-            0,
-            10
+            0
         )
         
         await token.approve(sale.address, WEI_MAXIMUM_GOAL * RATE, {from: OWNER})
@@ -131,20 +130,17 @@ contract("Sale", (accounts) => {
         return sale.sendTransaction({ from: INVESTOR2, value: 5 }).should.be.rejected
     })
 
-    it("should not allow to buy investor from white list amount of tokens less than minimum value", async() => {
+    it("should allow to buy investor from white list with amount of tokens more than minimum value", async() => {
         let contracts = await deploySale(5, 15); 
         sale = contracts.sale;
         let token = contracts.token;
         let pricingStrategy = contracts.strategy;
-        
+
         const now = web3.eth.getBlock(web3.eth.blockNumber).timestamp
         const startTime = (await sale.startTime()).toNumber()
         utils.increaseTime(startTime - now + 6*DAY);
         await sale.editEarlyParicipantWhitelist(INVESTOR, true, { from: OWNER });
-        await sale.sendTransaction({from: INVESTOR, value: 9}).should.be.rejected;
-    })
-
-    it("should allow to buy investor from white list with amount of tokens more than minimum value", async() => {
+        
         let value = 11;
         await sale.sendTransaction({from: INVESTOR, value: value}).should.be.fulfilled;
     })
