@@ -15,8 +15,10 @@ contract("Sale", (accounts) => {
     const INVESTOR = accounts[1]
     const INVESTOR2 = accounts[2]
     const WALLET = accounts[3]
+    const ADMIN = accounts[4]
+    const UNKNOWN = accounts[5]
     const RATE = 1
-    const WEI_MINIMUM_GOAL = 1
+    const WEI_MINIMUM_GOAL = 99
     const WEI_MAXIMUM_GOAL = 100
     const DAY = 60*60*24
 
@@ -151,5 +153,59 @@ contract("Sale", (accounts) => {
         let value = 5;
         await sale.sendTransaction({from: INVESTOR2, value: value}).should.be.fulfilled;
     })
-    
+
+    it("should allow admin to register external payment", async () => {
+        let {sale, token} = await deploySale(5, 10)
+        let wei = 3
+
+        await sale.setAdmin(ADMIN, {from: OWNER})
+
+        const now = web3.eth.getBlock(web3.eth.blockNumber).timestamp
+        const startTime = (await sale.startTime()).toNumber()
+        utils.increaseTime(startTime - now + 30)
+        
+        const tokens1 = new BigNumber(await token.balanceOf(INVESTOR))
+        await sale.registerPayment(INVESTOR, wei, {from: ADMIN})
+        const tokens2 = new BigNumber(await token.balanceOf(INVESTOR))
+
+        const investedAmount = new BigNumber(await sale.investedAmountOf(INVESTOR))
+
+        tokens2.sub(tokens1).should.bignumber.equal(wei * RATE)
+        investedAmount.should.bignumber.equal(wei)
+    })
+
+    it("should not allow non-admin to register external payment", async () => {
+        let {sale, token} = await deploySale(5, 10)
+        let wei = 3
+
+        await sale.setAdmin(ADMIN, {from: OWNER})
+
+        const now = web3.eth.getBlock(web3.eth.blockNumber).timestamp
+        const startTime = (await sale.startTime()).toNumber()
+        utils.increaseTime(startTime - now + 30)
+        
+        await sale.registerPayment(INVESTOR, wei, {from: UNKNOWN}).should.be.rejected
+    })
+
+    it("should not allow external buyers to refund ether", async () => {
+        let {sale, token} = await deploySale(5, 10)
+        let wei = 3
+
+        await sale.setAdmin(ADMIN, {from: OWNER})
+
+        // wait till start time
+        let now = web3.eth.getBlock(web3.eth.blockNumber).timestamp
+        const startTime = (await sale.startTime()).toNumber()
+        utils.increaseTime(startTime - now + 30)
+        
+        await sale.registerPayment(INVESTOR, wei, {from: ADMIN})
+
+        // wait till end time
+        now = web3.eth.getBlock(web3.eth.blockNumber).timestamp
+        const endTime = (await sale.endTime()).toNumber()
+        utils.increaseTime(endTime - now + 30)
+
+        await sale.loadRefund({value: wei})
+        await sale.refund({from: INVESTOR}).should.be.rejected
+    })
 })

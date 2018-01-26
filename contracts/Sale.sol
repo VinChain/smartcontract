@@ -63,6 +63,16 @@ contract Sale is Pausable, Contactable {
 
     // Addresses that are allowed to invest before ICO offical opens
     mapping (address => bool) public earlyParticipantWhitelist;
+
+    // whether a buyer bought tokens through other currencies
+    mapping (address => bool) public isExternalBuyer;
+
+    address public admin;
+
+    modifier onlyOwnerOrAdmin() {
+        require(msg.sender == owner || msg.sender == admin); 
+        _;
+    }
   
     /**
      * event for token purchase logging
@@ -118,49 +128,52 @@ contract Sale is Pausable, Contactable {
 
     // low level token purchase function
     function buyTokens(address beneficiary) public whenNotPaused payable returns (bool) {
-        require(beneficiary != 0x0);
-        require(validPurchase());
-    
         uint weiAmount = msg.value;
+        
+        require(beneficiary != 0x0);
+        require(validPurchase(weiAmount));
     
-        // calculate token amount to be created
-        uint tokenAmount = pricingStrategy.calculateTokenAmount(weiAmount, weiRaised);
+        mintTokenToBuyer(beneficiary, weiAmount);
 
-        // update state
+        wallet.transfer(weiAmount);
+
+        return true;
+    }
+
+    function mintTokenToBuyer(address beneficiary, uint weiAmount) internal {
         if (investedAmountOf[beneficiary] == 0) {
             // A new investor
             investorCount++;
         }
+
+        // calculate token amount to be created
+        uint tokenAmount = pricingStrategy.calculateTokenAmount(weiAmount, weiRaised);
+
         investedAmountOf[beneficiary] = investedAmountOf[beneficiary].add(weiAmount);
         weiRaised = weiRaised.add(weiAmount);
         tokensSold = tokensSold.add(tokenAmount);
     
         token.transferFrom(owner, beneficiary, tokenAmount);
         TokenPurchase(msg.sender, beneficiary, weiAmount, tokenAmount);
-
-        wallet.transfer(msg.value);
-
-        return true;
     }
 
    // return true if the transaction can buy tokens
-    function validPurchase() internal constant returns (bool) {
+    function validPurchase(uint weiAmount) internal view returns (bool) {
         bool withinPeriod = (now >= startTime || earlyParticipantWhitelist[msg.sender]) && now <= endTime;
-        bool nonZeroPurchase = msg.value != 0;
-        bool withinCap = weiRaised.add(msg.value) <= weiMaximumGoal;
-        bool moreThenMinimal = isMoreThenMinimal();
+        bool withinCap = weiRaised.add(weiAmount) <= weiMaximumGoal;
+        bool moreThenMinimal = isMoreThenMinimal(weiAmount);
 
-        return withinPeriod && nonZeroPurchase && withinCap && moreThenMinimal;
+        return withinPeriod && withinCap && moreThenMinimal;
     }
 
-    function isMoreThenMinimal() internal constant returns (bool) {
-        bool result = (earlyParticipantWhitelist[msg.sender] && msg.value >= minAmountForWL) ||
-                        (!earlyParticipantWhitelist[msg.sender] && msg.value >= minAmount);
+    function isMoreThenMinimal(uint weiAmount) internal view returns (bool) {
+        bool result = (earlyParticipantWhitelist[msg.sender] && weiAmount >= minAmountForWL) ||
+                      (!earlyParticipantWhitelist[msg.sender] && weiAmount >= minAmount);
         return result;
     }
 
     // return true if crowdsale event has ended
-    function hasEnded() external constant returns (bool) {
+    function hasEnded() external view returns (bool) {
         bool capReached = weiRaised >= weiMaximumGoal;
         bool afterEndTime = now > endTime;
         
@@ -168,12 +181,12 @@ contract Sale is Pausable, Contactable {
     }
 
     // get the amount of unsold tokens allocated to this contract;
-    function getWeiLeft() external constant returns (uint) {
+    function getWeiLeft() external view returns (uint) {
         return weiMaximumGoal - weiRaised;
     }
 
     // return true if the crowdsale has raised enough money to be a successful.
-    function isMinimumGoalReached() public constant returns (bool) {
+    function isMinimumGoalReached() public view returns (bool) {
         return weiRaised >= weiMinimumGoal;
     }
     
@@ -215,13 +228,25 @@ contract Sale is Pausable, Contactable {
     * and not through this contract.
     */
     function refund() external {
-        require(!isMinimumGoalReached() && loadedRefund > 0);
         uint256 weiValue = investedAmountOf[msg.sender];
+        
+        require(!isMinimumGoalReached() && loadedRefund > 0);
+        require(!isExternalBuyer[msg.sender]);
         require(weiValue > 0);
         
         investedAmountOf[msg.sender] = 0;
         weiRefunded = weiRefunded.add(weiValue);
         Refund(msg.sender, weiValue);
         msg.sender.transfer(weiValue);
+    }
+
+    function registerPayment(address beneficiary, uint weiAmount) public onlyOwnerOrAdmin {
+        require(validPurchase(weiAmount));
+        isExternalBuyer[beneficiary] = true;
+        mintTokenToBuyer(beneficiary, weiAmount);
+    }
+
+    function setAdmin(address adminAddress) external onlyOwner {
+        admin = adminAddress;
     }
 }
