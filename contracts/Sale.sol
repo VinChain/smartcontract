@@ -240,7 +240,7 @@ contract Sale is Pausable, Contactable {
         msg.sender.transfer(weiValue);
     }
 
-    function registerPayment(address beneficiary, uint weiAmount) public onlyOwnerOrAdmin {
+    function registerPayment(address beneficiary, uint weiAmount) external onlyOwnerOrAdmin {
         require(validPurchase(weiAmount));
         isExternalBuyer[beneficiary] = true;
         mintTokenToBuyer(beneficiary, weiAmount);
