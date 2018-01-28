@@ -131,14 +131,14 @@ contract Sale is Pausable, Contactable {
         require(beneficiary != 0x0);
         require(validPurchase(weiAmount));
     
-        mintTokenToBuyer(beneficiary, weiAmount);
+        transferTokenToBuyer(beneficiary, weiAmount);
 
         wallet.transfer(weiAmount);
 
         return true;
     }
 
-    function mintTokenToBuyer(address beneficiary, uint weiAmount) internal {
+    function transferTokenToBuyer(address beneficiary, uint weiAmount) internal {
         if (investedAmountOf[beneficiary] == 0) {
             // A new investor
             investorCount++;
@@ -235,7 +235,7 @@ contract Sale is Pausable, Contactable {
     function registerPayment(address beneficiary, uint weiAmount) external onlyOwnerOrAdmin {
         require(validPurchase(weiAmount));
         isExternalBuyer[beneficiary] = true;
-        mintTokenToBuyer(beneficiary, weiAmount);
+        transferTokenToBuyer(beneficiary, weiAmount);
     }
 
     function setAdmin(address adminAddress) external onlyOwner {
