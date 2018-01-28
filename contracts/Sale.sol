@@ -46,9 +46,6 @@ contract Sale is Pausable, Contactable {
     // minimal amount of ether, that investor can invest
     uint public minAmount;
 
-    // minimal amount of ether, that investor from white list can invest
-    uint public minAmountForWL;    
-
     // How many distinct addresses have invested
     uint public investorCount;
 
@@ -195,10 +192,6 @@ contract Sale is Pausable, Contactable {
     function setPricingStrategy(PricingStrategy _pricingStrategy) external onlyOwner returns (bool) {
         pricingStrategy = _pricingStrategy;
         return true;
-    }
-
-    function setMinAmountForWL(uint _minAmount) external onlyOwner returns (bool) {
-        minAmountForWL = _minAmount;
     }
 
     /**
