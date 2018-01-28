@@ -183,7 +183,7 @@ contract Sale is Pausable, Contactable {
      * allows to add and exclude addresses from earlyParticipantWhitelist for owner
      * @param isWhitelisted is true for adding address into whitelist, false - to exclude
      */
-    function editEarlyParicipantWhitelist(address addr, bool isWhitelisted) external onlyOwner returns (bool) {
+    function editEarlyParicipantWhitelist(address addr, bool isWhitelisted) external onlyOwnerOrAdmin returns (bool) {
         earlyParticipantWhitelist[addr] = isWhitelisted;
         return true;
     }
