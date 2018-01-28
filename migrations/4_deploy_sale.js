@@ -19,21 +19,21 @@ module.exports = function (deployer, network, accounts) {
         endTime =   1512129599 // Friday, December 1, 2017 11:59:59 AM UTC
         pricingStrategy = PricingStrategy.address
         wallet = "0x7d5669Ee2B8e9935849FaE55B74D05184f9E3867"
-        weiMaximumGoal = web3.toWei(1585, "ether")
-        weiMinimumGoal = web3.toWei(1585, "ether")
-        maxTokens = new BigNumber(12500000).mul(new BigNumber("1e18"))
-        minAmount = web3.toWei(1, "ether")
+        weiMaximumGoal = web3.toWei(23250, "ether")
+        weiMinimumGoal = web3.toWei(3300, "ether")
+        maxTokens = new BigNumber(600000000).mul(new BigNumber("1e18"))
+        minAmount = 0//web3.toWei(1, "ether")
     }
     else {
         const now = web3.eth.getBlock(web3.eth.blockNumber).timestamp
-        startTime = now + 1000
+        startTime = now + 100
         endTime = now + 2000
         pricingStrategy = PricingStrategy.address
         wallet = accounts[3]
         weiMaximumGoal = new BigNumber(100)
         weiMinimumGoal = 1
         maxTokens = new BigNumber(12500000).mul(new BigNumber("1e18"))
-        minAmount = 2
+        minAmount = 0
     }
     
     deployer.deploy(Sale,
