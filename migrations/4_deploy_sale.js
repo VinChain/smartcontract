@@ -22,18 +22,18 @@ module.exports = function (deployer, network, accounts) {
         weiMaximumGoal = web3.toWei(23250, "ether")
         weiMinimumGoal = web3.toWei(3300, "ether")
         maxTokens = new BigNumber(600000000).mul(new BigNumber("1e18"))
-        minAmount = 0//web3.toWei(1, "ether")
+        minAmount = 1
     }
     else {
         const now = web3.eth.getBlock(web3.eth.blockNumber).timestamp
         startTime = now + 100
-        endTime = now + 2000
+        endTime = now + 12*60*60
         pricingStrategy = PricingStrategy.address
         wallet = accounts[3]
-        weiMaximumGoal = new BigNumber(100)
-        weiMinimumGoal = 1
+        weiMaximumGoal = web3.toWei(23250, "ether")
+        weiMinimumGoal = web3.toWei(3300, "ether")
         maxTokens = new BigNumber(12500000).mul(new BigNumber("1e18"))
-        minAmount = 0
+        minAmount = 1
     }
     
     deployer.deploy(Sale,
